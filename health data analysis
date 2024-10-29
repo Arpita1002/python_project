@@ -1,0 +1,172 @@
+import pandas as pd
+import numpy as np
+
+d= pd.read_csv('heart.csv')
+print(d.head())
+
+print(d.tail())
+
+print(d)
+
+print(d.isnull().sum())
+
+#Since there is no null values in the given data set we will continue further
+
+print(d.dtypes)
+
+print(d.describe())
+
+import matplotlib.pyplot as plt
+
+print(d['sex'].unique() )
+
+print(d['target'].unique() )
+
+print(d['cp'].unique() )
+
+import seaborn as sns
+
+#Scatter Plot for Age vs Cholesterol and how related it is to presense of heart disease
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x='age', y='chol', data=d, hue='target', palette='dark', alpha=0.7)
+plt.title('Scatter Plot of Age vs Cholesterol')
+plt.xlabel('Age')
+plt.ylabel('Cholesterol')
+plt.grid()
+plt.legend(title='Heart Disease', loc='upper left', labels=['No Disease', 'Disease'])
+plt.show()
+
+#Distribution of cholesterol level
+plt.figure(figsize=(10, 6))
+sns.histplot(d['chol'], bins=20, kde=True, color='purple')
+plt.title('Distribution of Cholesterol Levels')
+plt.xlabel('Cholesterol')
+plt.ylabel('Frequency')
+plt.grid()
+plt.show()
+
+#Average Cholesterol by Disease Status
+plt.figure(figsize=(10, 6))
+colors=['blue','maroon']
+sns.barplot(x='target', y='chol', data=d, palette=colors)
+plt.title('Average Cholesterol by Heart Disease Status')
+plt.xlabel('Heart Disease (0: No, 1: Yes)')
+plt.ylabel('Average Cholesterol')
+plt.grid()
+plt.show()
+
+#Box Plot of Resting Blood Pressure by Heart Disease Status
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='target', y='trestbps', data=d, palette='muted')
+plt.title('Box Plot of Resting Blood Pressure by Heart Disease Status', fontsize=16)
+plt.xlabel('Heart Disease Status (0: No, 1: Yes)', fontsize=14)
+plt.ylabel('Resting Blood Pressure (mm Hg)', fontsize=14)
+plt.xticks([0, 1], ['No Disease', 'Disease'], fontsize=12)  # Custom x-ticks
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.show()
+
+#Violin Plot of Age vs. Resting Blood Pressure
+
+d['age_group'] = [
+    '20-30' if 20 <= age < 30 else
+    '30-40' if 30 <= age < 40 else
+    '40-50' if 40 <= age < 50 else
+    '50-60' if 50 <= age < 60 else
+    '60-70' if 60 <= age < 70 else
+    '70-80' if 70 <= age < 80 else
+    '80-90' if 80 <= age < 90 else
+    '90+' for age in d['age']
+]
+
+plt.figure(figsize=(12, 6))
+sns.violinplot(x='age_group', y='trestbps', data=d, palette='muted')
+plt.title('Violin Plot of Age vs. Resting Blood Pressure', fontsize=16)
+plt.xlabel('Age (years)', fontsize=14)
+plt.ylabel('Resting Blood Pressure (mm Hg)', fontsize=14)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.show()
+
+# Counts of heart disease status by sex
+counts = d.groupby(['sex', 'target']).size()
+
+# pie chart for females (sex = 0)
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1) 
+plt.pie(counts.loc[0], labels=['No Disease (0)', 'Disease (1)'], autopct='%1.1f%%', startangle=90, colors=['lightblue', 'red'])
+plt.title('Heart Disease Status for Females (0)', fontsize=16)
+
+# pie chart for males (sex = 1)
+plt.subplot(1, 2, 2)  
+plt.pie(counts.loc[1], labels=['No Disease (0)', 'Disease (1)'], autopct='%1.1f%%', startangle=90, colors=['lightblue', 'red'])
+plt.title('Heart Disease Status for Males (1)', fontsize=16)
+
+# Show the plots
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(12, 6))
+
+for i in range(4):
+    plt.subplot(2, 2, i + 1)
+    
+    # Count the occurrences of heart disease status for the current chest pain type
+    counts = d[d['cp'] == i]['target'].value_counts()
+    
+    # Plot the bar chart
+    plt.bar(counts.index, counts.values, color=['indigo', 'firebrick'])
+    
+    # Set the title and labels
+    plt.title(f'Heart Disease Status for Chest Pain Type {i}', fontsize=14)
+    plt.xlabel('Heart Disease (0 = No, 1 = Yes)')
+    plt.ylabel('Count')
+    plt.xticks([0, 1], ['No Disease (0)', 'Disease (1)'])
+
+# Display the plots
+plt.tight_layout()
+plt.show()
+
+
+# Count occurrences of each thal type for females (sex = 0)
+female_counts = d[d['sex'] == 0][d['thal'] != 0]['thal'].value_counts()
+
+# Count occurrences of each thal type for males (sex = 1)
+male_counts = d[d['sex'] == 1][d['thal'] != 0]['thal'].value_counts()
+
+# Create a figure for the bar graphs
+plt.figure(figsize=(12, 5))
+
+# Plot for females (sex = 0)
+plt.subplot(1, 2, 1)  # 1 row, 2 columns, first subplot
+female_counts.plot(kind='bar', color='royalblue')
+plt.title('Thalassemia Types in Females')
+plt.xlabel('Thalassemia Type')
+plt.ylabel('Count')
+plt.xticks(ticks=[0, 1, 2], labels=['Fixed Defect (1)', 'Normal (2)', 'Reversible Defect (3)'], rotation=0)
+
+# Plot for males (sex = 1)
+plt.subplot(1, 2, 2)  # 1 row, 2 columns, second subplot
+male_counts.plot(kind='bar', color='darkviolet')
+plt.title('Thalassemia Types in Males')
+plt.xlabel('Thalassemia Type')
+plt.ylabel('Count')
+plt.xticks(ticks=[0, 1, 2], labels=['Fixed Defect (1)', 'Normal (2)', 'Reversible Defect (3)'], rotation=0)
+
+# Show the plots
+plt.tight_layout()
+plt.show()
+
+d['age_group'] = pd.cut(d['age'], bins=[29, 39, 49, 59, 69, 79], labels=['30-39', '40-49', '50-59', '60-69', '70-79'])
+
+# Create cholesterol groups
+d['cholesterol_group'] = pd.cut(d['chol'], bins=[0, 200, 240, 300], labels=['Normal', 'Borderline High', 'High'])
+
+# Create heatmap data
+heatmap_data = d.groupby(['age_group', 'cholesterol_group', 'target']).size().unstack().fillna(0)
+
+# Plotting the heatmap
+plt.figure(figsize=(12, 6))
+sns.heatmap(heatmap_data, annot=True, fmt='.0f', cmap='RdBu', cbar_kws={'label': 'Number of Patients'})
+plt.title('Heatmap of Heart Disease Status Across Age and Cholesterol Levels')
+plt.xlabel('Cholesterol Levels')
+plt.ylabel('Age Group')
+plt.show()
